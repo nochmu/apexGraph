@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graph xmlns="https://github.com/nochmu/apexGraph/graph.xsd">
+  <root>
+
+    <vertex id="v1">
+      <style mxRaw="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;"/>
+      <geometry x="330" y="2040" width="140" height="104" />
+
+    </vertex>
+
+    <edge id="e1" from="" to=""/>
+
+  </root>
+
+</graph>
+
+
+
+
+<object label="Classname" placeholders="1" test="wqef" propb="reg" id="5IAvmo6hZMxk_MpKZd5g-30">
+<mxCell style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" vertex="1" parent="1">
+  <mxGeometry x="330" y="2040" width="140" height="104" as="geometry"/>
+</mxCell>
+</object>

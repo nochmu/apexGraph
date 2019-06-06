@@ -1,0 +1,55 @@
+<html>
+<head>
+    <title>Hello, World! example for mxGraph</title>
+    <link rel="stylesheet" type="text/css" href="css/grapheditor.css">
+
+    <!-- Sets the basepath for the library if not in same directory -->
+    <script type="text/javascript">
+        mxBasePath = 'lib/mxgraph/javascript/src/';
+    </script>
+
+    <script type="text/javascript" src="lib/mxgraph/javascript/mxClient.js"></script>
+
+    <script type="text/javascript" src="js/shapes.js"></script>
+    <script type="text/javascript" src="js/apexGraph.js"></script>
+
+    <script type="text/javascript">
+        function init_graph(container){
+            apexGraph.checkBrowser();
+            apexGraph.showDebugConsole();
+
+            var ag = apexGraph.init(container);
+            ag.update(function() {
+                ag.parseGraph(apexGraph.PARSER_MXGRAPH, 'data/graph.xml');
+                ag.applyLayout(apexGraph.LAYOUT_FAST_ORGANIC);
+            });
+
+
+            document.body.appendChild(mxUtils.button('Zoom In', function()
+            {
+                ag.zoomIn();
+            }));
+
+            document.body.appendChild(mxUtils.button('Zoom Out', function()
+            {
+                ag.zoomOut();
+            }));
+
+            document.body.appendChild(mxUtils.button('Sort', function()
+            {
+                ag.applyLayout(apexGraph.LAYOUT_FAST_ORGANIC);
+            }));
+        }
+    </script>
+</head>
+
+<!-- Page passes the container for the graph to the program -->
+<body onload="init_graph(document.getElementById('graphContainer'))">
+
+<!-- Creates a container for the graph with a grid wallpaper -->
+<div id="graphContainer"
+     style="cursor:default;position:absolute;top:30px;left:0px;bottom:0px;right:0px;background:url('images/grid.gif');cursor:default;">
+</div>
+</body>
+</html>
+

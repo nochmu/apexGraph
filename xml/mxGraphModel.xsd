@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="https://github.com/nochmu/apexGraph/mxGraphModel.xsd"
+           xmlns="https://github.com/nochmu/apexGraph/mxGraphModel.xsd"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="mxGraphModel" type="mxGraphModelType"/>
+  <xs:complexType name="mxCellType" mixed="true">
+    <xs:sequence>
+      <xs:element type="mxGeometryType" name="mxGeometry" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id" use="optional"/>
+    <xs:attribute type="xs:string" name="parent" use="optional"/>
+    <xs:attribute type="xs:string" name="customId" use="optional"/>
+    <xs:attribute type="xs:string" name="value" use="optional"/>
+    <xs:attribute type="xs:string" name="vertex" use="optional"/>
+    <xs:attribute type="xs:string" name="style" use="optional"/>
+    <xs:attribute type="xs:string" name="edge" use="optional"/>
+    <xs:attribute type="xs:string" name="source" use="optional"/>
+    <xs:attribute type="xs:string" name="target" use="optional"/>
+  </xs:complexType>
+  <xs:complexType name="mxGeometryType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="x" use="optional"/>
+        <xs:attribute type="xs:string" name="y" use="optional"/>
+        <xs:attribute type="xs:string" name="width" use="optional"/>
+        <xs:attribute type="xs:string" name="height" use="optional"/>
+        <xs:attribute type="xs:string" name="as" use="optional"/>
+        <xs:attribute type="xs:string" name="relative" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="mxCellType" name="mxCell" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="mxGraphModelType">
+    <xs:sequence>
+      <xs:element type="rootType" name="root"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

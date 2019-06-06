@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           targetNamespace="https://github.com/nochmu/apexGraph/graph.xsd"
+           xmlns="https://github.com/nochmu/apexGraph/graph.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="graph" type="graphType" />
+
+  <xs:complexType name="vertexType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="id"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="edgeType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="id"/>
+        <xs:attribute type="xs:string" name="from"/>
+        <xs:attribute type="xs:string" name="to"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="vertexType" name="vertex" />
+      <xs:element type="edgeType" name="edge" />
+    </xs:sequence>
+
+  </xs:complexType>
+  <xs:complexType name="graphType">
+    <xs:sequence>
+      <xs:element type="rootType" name="root" />
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

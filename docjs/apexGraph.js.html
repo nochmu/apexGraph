@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: apexGraph.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: apexGraph.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace apexGraph
+ */
+var apexGraph = apexGraph || {};
+(function()
+{
+
+    var _isDebug = false;
+    var _isDebugConsole = false;
+    var _graphParsers = {};
+    var _layouts = {};
+
+    function debug(msg)
+    {
+        if(this._isDebug)
+        {
+            if(this._isDebugConsole)
+                mxLog.debug(msg);
+            else
+                console.log(msg);
+        }
+
+    }
+
+    /**
+     * @class EditorInstance
+     */
+    var EditorInstance = apexGraph.EditorInstance = function( container) {
+        this._mxEditor =  new mxEditor();
+        this._mxEditor.setGraphContainer(container);
+
+        this._getMxGraph = function(){
+            return this._mxEditor.graph;
+        }
+
+    };
+
+    EditorInstance.prototype.configure =  function()
+    {
+        var graph = this._getMxGraph();
+        graph.setEnabled(false);
+        graph.setPanning(true);
+        graph.setTooltips(true);
+        graph.panningHandler.useLeftButtonForPanning = true;
+
+        // Adds a highlight on the cell under the mousepointer
+        new mxCellTracker(graph);
+
+
+        // Enables rubberband selection
+        new mxRubberband(graph);
+
+
+        // Gets the default parent for inserting new cells. This
+        // is normally the first child of the root (ie. layer 0).
+        var parent = graph.getDefaultParent();
+
+        var style = new Object();
+        style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE;
+        style[mxConstants.STYLE_OPACITY] = 50;
+        style[mxConstants.STYLE_FONTCOLOR] = '#774400';
+        graph.getStylesheet().putCellStyle('ROUNDED', style);
+
+        graph.isHtmlLabel = function (cell) {
+            return true;
+        };
+
+    };
+
+
+    /**
+     * Do an update transactional
+     * @param callback
+     */
+    EditorInstance.prototype.update = function(callback)
+    {
+        var graph = this._getMxGraph();
+        function done_handle(){
+            graph.getModel().endUpdate();
+        }
+
+        graph.getModel().beginUpdate();
+
+        // done-handler given?
+        if(callback.length == 1)
+        {
+            callback(done_handle);
+        }
+        else // auto done()
+        {
+            callback();
+            done_handle();
+        }
+    };
+
+    /**
+     * Apply the layout with the given layout key.
+     * @param {string} key -  Key that was used to register the driver
+     * @param {*} [args={}] -   argument for the layout driver
+     * @method
+     */
+    EditorInstance.prototype.applyLayout = function(key, args)
+    {
+        if(!_layouts.hasOwnProperty(key))
+        {
+            throw "LayoutDriver '"+key+"' not installed!";
+        }
+
+        var execDriver = _layouts[key];
+        execDriver(this, args);
+    };
+
+    /**
+     * @param key
+     * @param source
+     * @param args
+     */
+    EditorInstance.prototype.parseGraph = function(key, source, args)
+    {
+        if(!_graphParsers.hasOwnProperty(key))
+        {
+            throw "GraphParser '"+key+"' not installed!";
+        }
+
+        var execParser = _graphParsers[key];
+        execParser(this, source, args);
+    };
+
+    EditorInstance.prototype.zoomIn = function()
+    {
+        this._getMxGraph().zoomIn();
+    }
+
+    EditorInstance.prototype.zoomOut = function()
+    {
+        this._getMxGraph().zoomOut();
+    }
+
+
+    /**
+     * @function
+     * @callback graphParser-cb
+     * @param source {string}
+     */
+    apexGraph._registerGraphParser = function(key, callback)
+    {
+        _graphParsers[key] = callback;
+    };
+
+    apexGraph._registerLayoutDriver = function(key, callback)
+    {
+        _layouts[key] = callback;
+    };
+
+    apexGraph._registerShape = function(key, callback)
+    {
+        var shape = callback();
+        mxCellRenderer.registerShape(key, shape);
+    }
+
+
+    /** Creates a new Instance
+     * @param {HTMLElement} container  DOM node that will contain the graph display.
+     * @param {*} [opts={}] Option Object
+     * @return EditorInstance
+     * @function
+     */
+    apexGraph.init = function(container, opts){
+        var editor = new apexGraph.EditorInstance(container);
+        editor.configure();
+        return editor;
+    };
+
+
+    apexGraph.checkBrowser = function(){
+        // Checks if the browser is supported
+        if (!mxClient.isBrowserSupported()) {
+            throw new Error('Browser is not supported!');
+        }
+    };
+
+    apexGraph.showDebugConsole = function(){
+        _isDebugConsole = true;
+        mxLog.show();
+    };
+
+
+
+})();
+
+
+(function()
+{
+    /**
+     * @constant Parser for the mxGraph XML format
+     * @type {string}
+     */
+    apexGraph.PARSER_MXGRAPH = 'mxgraph';
+    apexGraph._registerGraphParser(apexGraph.PARSER_MXGRAPH, function (inst, source, args) {
+        var graph = inst._getMxGraph();
+
+        // Parses the mxGraph XML file format
+        function read(graph, filename)
+        {
+
+            var req = mxUtils.load(filename);
+            var root = req.getDocumentElement();
+            var dec = new mxCodec(root.ownerDocument);
+            dec.decode(root, graph.getModel());
+
+        };
+
+        // Loads the mxGraph file format (XML file)
+        read(graph, source);
+
+    });
+
+    /**
+     * @constant LayoutDriver FastOrganic
+     * @type {string}
+     */
+    apexGraph.LAYOUT_FAST_ORGANIC = 'FastOrganicLayout';
+    apexGraph._registerLayoutDriver(apexGraph.LAYOUT_FAST_ORGANIC, function (inst, args) {
+        var graph = inst._getMxGraph();
+
+        // Gets the default parent for inserting new cells. This
+        // is normally the first child of the root (ie. layer 0).
+        var parent = graph.getDefaultParent();
+
+        // Execute the layout
+        var layout = new mxFastOrganicLayout(graph);
+
+        // Moves stuff wider apart than usual
+        layout.forceConstant = 100;
+
+        layout.execute(parent);
+
+    });
+
+
+    apexGraph.SHAPE_BOX = 'box';
+    apexGraph._registerShape(apexGraph.SHAPE_BOX,  function(){
+
+        /*
+            The example shape is a "3D box" that looks like this:
+                       ____
+                      /   /|
+                     /___/ |
+                     |   | /
+                     |___|/
+
+               The code below defines the shape. The BoxShape function
+               it the constructor which creates a new object instance.
+        */
+        function BoxShape()
+        {
+            mxCylinder.call(this);
+        };
+        mxUtils.extend(BoxShape, mxCylinder);
+
+        // extrusion of the box
+        BoxShape.prototype.extrude = 10;
+
+
+        /*
+               Next, the mxCylinder's redrawPath method is "overridden".
+               This method has a isForeground argument to separate two
+               paths, one for the background (which must be closed and
+               might be filled) and one for the foreground, which is
+               just a stroke.
+
+             Foreground:       /
+                         _____/
+                              |
+                              |
+                           ____
+             Background:  /    |
+                         /     |
+                         |     /
+                         |____/
+        */
+        BoxShape.prototype.redrawPath = function(path, x, y, w, h, isForeground)
+        {
+            var dy = this.extrude * this.scale;
+            var dx = this.extrude * this.scale;
+
+            if (isForeground)
+            {
+                path.moveTo(0, dy);
+                path.lineTo(w - dx, dy);
+                path.lineTo(w, 0);
+                path.moveTo(w - dx, dy);
+                path.lineTo(w - dx, h);
+            }
+            else
+            {
+                path.moveTo(0, dy);
+                path.lineTo(dx, 0);
+                path.lineTo(w, 0);
+                path.lineTo(w, h - dy);
+                path.lineTo(w - dx, h);
+                path.lineTo(0, h);
+                path.lineTo(0, dy);
+                path.lineTo(dx, 0);
+                path.close();
+            }
+        };
+        return BoxShape;
+    });
+
+
+    // Loads the stencils into the registry
+    var req = mxUtils.load('data/stencils.xml');
+    var root = req.getDocumentElement();
+    var shape = root.firstChild;
+
+    while (shape != null)
+    {
+        if (shape.nodeType == mxConstants.NODETYPE_ELEMENT)
+        {
+            mxStencilRegistry.addStencil(shape.getAttribute('name'), new mxStencil(shape));
+        }
+
+        shape = shape.nextSibling;
+    }
+
+})();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="apexGraph.html">apexGraph</a></li></ul><h3>Classes</h3><ul><li><a href="EditorInstance.html">EditorInstance</a></li></ul><h3>Global</h3><ul><li><a href="global.html#LayoutDriver">LayoutDriver</a></li><li><a href="global.html#Parser">Parser</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.2</a> on Thu Jun 06 2019 01:46:15 GMT+0200 (Central European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
